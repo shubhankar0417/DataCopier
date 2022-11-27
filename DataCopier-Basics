@@ -1,0 +1,98 @@
+# As part of this module the aim is to take the JSON data from a source and to deploy it on the target postgre database
+
+Section 1 - Getting started
+1. Problem statement
+2. Setup docker
+3. Overview of docker
+   Commands -
+   1. docker hello-world - to create a docker hello-world image
+   2. docker ps
+   3. docker image ls - List all the running images
+   4. docker container ls - List all the running containers
+   5. docker container rm 'container name'
+   6. docker image rm 'image name'
+   7. You can run the docker command - 'docker run hello-world' = It will pull the image and run the container
+   Note - We can have one image and with that image we can have multiple containers
+        - Containers are ephemeral (stateless)
+        - Production database should not be running on the docker containers
+        - Production applications are deployed on the docker containers to check the scaling up and scaling down of the application
+4. Prepare Dataset - We can clone the datasets from link - git clone https://www.github.com/itversity/retail_db_json.git
+5. Setup postgre database -
+   Command to run after pulling docker image
+
+    docker run --name retail_pg -e POSTGRES_PASSWORD=itversity -d -v A:\PYTHON\PYCODES\DataEngEssentials\data-engineering-spark\DataCopier\retail_pg:/var/lib/postgresql/data -v A:\PYTHON\PYCODES\DataEngEssentials\data-engineering-spark\data\retail_db_json:/retail_db_json -p 5452:5432 postgres
+
+    Note -
+    1. --name = suggests the name of the container which is nothing but the directory where we want to run the container.
+    2. -d = Is dashed mode which means we should get the prompt back when command execution is done.
+    3. -v = Is the variable we want to specify.
+    4. -e = Is the environmental variable.
+    5. -p = Is the port which postgres is runnning (5432) and port which is exposed (5452)
+
+    To connect to docker postgres container we can run the command -
+    - Cmd = 'docker exec -it retail_pg psql -U postgres'
+    - Postgres is called multi-tenant database since it can have many users and many databases.
+    - Postgres users can be linked to many db and vice-versa in many to many relation.
+    Commands -
+    - Create database retail_db;
+    - create user retail_user WITH ENCRYPTED PASSWORD 'itversity';
+    - GRANT ALL PRIVILEGES ON DATABASE retail_db TO retail_user;
+    - \q to quit the database
+    - docker exec -it retail_pg psql -U postgres -d retail_db;
+    - Now exit the postgres db and check whether .psql file to create the table is present or not.
+      command - docker exec -it retail_pg ls -ltr /retail_db_json
+    - Run command to create tables
+      command - docker exec -it retail_pg psql -U retail_user -d retail_db -f /retail_db_json/create_db_tables_pg.sql
+
+6. Overview of Postgres -
+   - Postgres is a multi tenant database server which means it can have multiple databases per server.
+   - We create different users and grant them requisite permissions.
+   - Permissions are - DML, DDL, Queries
+   - Go to bash mode for the container - 'docker exec -it retail_pg bash'
+   - Connect to the database - 'psql -U retail_user -d retail_db -W'
+   - \d = Show all the tables in the database
+   - Create a new table
+        CREATE TABLE t (
+            i INT,
+            s VARCHAR(50)
+            );
+   - CRUD operations = CREATE, READ (Query), DELETE, UPDATE are basic DML operations i.e. Data Manipulation language.
+   - Insert the records
+     INSERT INTO t (i, s)
+     VALUES
+     (1, 'HELLO'),
+     (2, 'WORLD');
+    - Use DELETE FROM <table-name> where some condition is to be specified.
+    - Use TRUNCATE TABLE <table-name> where no condition is to be specified because truncate is faster.
+    - DROP the table using command - DROP table <table-name>
+    - DDL commands starts with CREATE, ALTER, TRUNCATE, DROP as they define the operations being performed on the table.
+
+
+7. Setup project using Pycharm
+8. Managing dependencies
+9. Creating github repository
+
+Section 2 - Reading data using pandas
+1. Overview of Retail data
+2. Adding pandas to the project
+3. Reading data using pandas
+4. Previewing data using pandas
+5. Reading data in chunks
+6. Dynammically read files
+7. Create read program
+
+Section 3 - Database programming using pandas
+1. Validate postgres setup using docker
+2. Add required dependencies
+3. Create user table in retail_db database
+4. Truncate user table
+5. Write pandas dataframe to table
+6. Validate user data
+7. Dropping user table
+
+Section 4 - Loading data from files to tables
+1. Populating departments table
+2. Validate departments table
+3. Populating orders table
+4. Validate orders table
+5. Validate orders table using pandas
